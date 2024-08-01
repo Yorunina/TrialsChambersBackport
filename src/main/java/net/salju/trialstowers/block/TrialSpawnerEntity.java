@@ -6,7 +6,8 @@ import net.salju.trialstowers.init.TrialsEffects;
 import net.salju.trialstowers.init.TrialsBlockEntities;
 import net.salju.trialstowers.events.TrialsManager;
 import net.salju.trialstowers.TrialsMod;
-import net.minecraft.world.phys.Vec3;
+
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.Blocks;
@@ -48,15 +49,20 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.Holder;
 import net.minecraft.core.BlockPos;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.time.temporal.ChronoField;
+
+import javax.annotation.Nullable;
+
+import java.util.List;
+
+import java.time.temporal.ChronoField;
 import java.time.LocalDate;
-import com.google.common.collect.Lists;
+
+import com.google.common.collect.Lists;
 
 public class TrialSpawnerEntity extends BlockEntity {
 	private ItemStack egg;
 	private boolean isActive;
+	private String spawnLootTable = "trials:gameplay/spawner_loot";
 	private int d;
 	private int cd;
 	private int e;
@@ -73,6 +79,7 @@ public class TrialSpawnerEntity extends BlockEntity {
 			tag.put("SpawnEgg", this.egg.save(new CompoundTag()));
 		}
 		tag.putBoolean("isActive", this.isActive);
+		tag.putString("SpawnLootTable", this.spawnLootTable);
 		tag.putInt("Difficulty", this.d);
 		tag.putInt("Cooldown", this.cd);
 		tag.putInt("Enemies", this.e);
@@ -87,6 +94,7 @@ public class TrialSpawnerEntity extends BlockEntity {
 			this.egg = stack;
 		}
 		this.isActive = tag.getBoolean("isActive");
+		this.spawnLootTable = tag.getString("SpawnLootTable");
 		this.d = tag.getInt("Difficulty");
 		this.cd = tag.getInt("Cooldown");
 		this.e = tag.getInt("Enemies");
@@ -106,6 +114,7 @@ public class TrialSpawnerEntity extends BlockEntity {
 				this.egg = stack;
 			}
 			this.isActive = packet.getTag().getBoolean("isActive");
+			this.spawnLootTable = packet.getTag().getString("SpawnLootTable");
 			this.d = packet.getTag().getInt("Difficulty");
 			this.cd = packet.getTag().getInt("Cooldown");
 			this.e = packet.getTag().getInt("Enemies");
@@ -120,6 +129,7 @@ public class TrialSpawnerEntity extends BlockEntity {
 			tag.put("SpawnEgg", this.egg.save(new CompoundTag()));
 		}
 		tag.putBoolean("isActive", this.isActive);
+		tag.putString("SpawnLootTable", this.spawnLootTable);
 		tag.putInt("Difficulty", this.d);
 		tag.putInt("Cooldown", this.cd);
 		tag.putInt("Enemies", this.e);
@@ -141,7 +151,7 @@ public class TrialSpawnerEntity extends BlockEntity {
 									target.setCd(target.getCd() - 1);
 								} else if (target.getRemainingEnemies() == target.getTotalEnemies()) {
 									target.setCd(80);
-									int e = (target.getDifficulty() <= 1 ? 3 : 2);
+									int e = (target.getDifficulty() <= 1 ? 4 : 3);
 									if (e > target.getTotalEnemies()) {
 										e = target.getTotalEnemies();
 									}
@@ -157,7 +167,7 @@ public class TrialSpawnerEntity extends BlockEntity {
 								target.setCd(target.getCd() - 1);
 							} else {
 								target.setActivity(false);
-								target.setCd(36000);
+								target.setCd(24000);
 								target.setDifficulty(Mth.nextInt(world.getRandom(), 2, 100));
 								lvl.playSound(null, pos, TrialsModSounds.SPAWNER_CLOSE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 								world.setBlock(pos, state.setValue(TrialSpawnerBlock.ACTIVE, Boolean.valueOf(false)).setValue(TrialSpawnerBlock.EJECT, Boolean.valueOf(false)).setValue(TrialSpawnerBlock.CURSED, Boolean.valueOf(false)), 3);
@@ -169,7 +179,7 @@ public class TrialSpawnerEntity extends BlockEntity {
 								if (block.isCursed(state)) {
 									Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), new ItemStack(TrialsItems.TRIAL_KEY.get()));
 								} else {
-									for (ItemStack stack : TrialsManager.getLoot(target, world, "trials:gameplay/spawner_loot")) {
+									for (ItemStack stack : TrialsManager.getLoot(target, world, target.getSpawnLootTable())) {
 										Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), stack);
 									}
 								}
@@ -206,8 +216,8 @@ public class TrialSpawnerEntity extends BlockEntity {
 								lvl.sendParticles(ParticleTypes.FLAME, pos.getX(), (pos.getY() + 1.0), (pos.getZ() + 1.0), 8, 0.1, 0.1, 0.1, 0);
 							}
 							target.setActivity(true);
-							target.setTotalEnemies(6 + (i * 2));
-							target.setRemainingEnemies(6 + (i * 2));
+							target.setTotalEnemies(8 + (i * 2));
+							target.setRemainingEnemies(8 + (i * 2));
 							target.setCd(20);
 						}
 					}
@@ -398,6 +408,9 @@ public class TrialSpawnerEntity extends BlockEntity {
 	public int getRemainingEnemies() {
 		return this.k;
 	}
+	public String getSpawnLootTable() {
+		return this.spawnLootTable;
+	}
 
 	public void setActivity(boolean check) {
 		this.isActive = check;
@@ -418,10 +431,12 @@ public class TrialSpawnerEntity extends BlockEntity {
 	public void setRemainingEnemies(int i) {
 		this.k = i;
 	}
-
+	public void setSpawnLootTable(String i) {
+		this.spawnLootTable = i;
+	}
 	public void updateBlock() {
 		this.setChanged();
 		this.getLevel().updateNeighborsAt(this.getBlockPos(), this.getBlockState().getBlock());
 		this.getLevel().sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
 	}
-}
+}

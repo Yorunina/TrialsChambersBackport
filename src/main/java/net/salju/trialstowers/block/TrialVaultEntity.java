@@ -4,7 +4,8 @@ import net.salju.trialstowers.init.TrialsModSounds;
 import net.salju.trialstowers.init.TrialsBlockEntities;
 import net.salju.trialstowers.events.TrialsManager;
 import net.salju.trialstowers.TrialsMod;
-import net.minecraft.world.level.block.state.BlockState;
+
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +22,8 @@ import net.minecraft.core.BlockPos;
 public class TrialVaultEntity extends BlockEntity {
 	private int cd;
 
+	private String vaultLootTable = "trials:gameplay/vault_loot";
+
 	public TrialVaultEntity(BlockPos pos, BlockState state) {
 		super(TrialsBlockEntities.VAULT.get(), pos, state);
 	}
@@ -29,12 +32,14 @@ public class TrialVaultEntity extends BlockEntity {
 	public void saveAdditional(CompoundTag tag) {
 		super.saveAdditional(tag);
 		tag.putInt("Cooldown", this.cd);
+		tag.putString("VaultLootTable", this.vaultLootTable);
 	}
 
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
 		this.cd = tag.getInt("Cooldown");
+		this.vaultLootTable = tag.getString("VaultLootTable");
 	}
 
 	@Override
@@ -46,6 +51,7 @@ public class TrialVaultEntity extends BlockEntity {
 	public void onDataPacket(Connection queen, ClientboundBlockEntityDataPacket packet) {
 		if (packet != null && packet.getTag() != null) {
 			this.cd = packet.getTag().getInt("Cooldown");
+			this.vaultLootTable = packet.getTag().getString("VaultLootTable");
 		}
 	}
 
@@ -53,6 +59,7 @@ public class TrialVaultEntity extends BlockEntity {
 	public CompoundTag getUpdateTag() {
 		CompoundTag tag = new CompoundTag();
 		tag.putInt("Cooldown", this.cd);
+		tag.putString("VaultLootTable", this.vaultLootTable);
 		return tag;
 	}
 
@@ -73,7 +80,7 @@ public class TrialVaultEntity extends BlockEntity {
 							lvl.playSound(null, pos, TrialsModSounds.VAULT_OPEN.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 							for (int i = 0; i != e; ++i) {
 								TrialsMod.queueServerWork((20 * i), () -> {
-									for (ItemStack stack : TrialsManager.getLoot(target, world, "trials:gameplay/vault_loot")) {
+									for (ItemStack stack : TrialsManager.getLoot(target, world, target.getVaultLootTable())) {
 										lvl.playSound(null, pos, TrialsModSounds.VAULT_EJECT.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 										Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), stack);
 									}
@@ -102,6 +109,13 @@ public class TrialVaultEntity extends BlockEntity {
 
 	public void setCd(int i) {
 		this.cd = i;
+	}
+
+	public String getVaultLootTable() {
+		return this.vaultLootTable;
+	}
+	public void setVaultLootTable(String i) {
+		this.vaultLootTable = i;
 	}
 
 	public void updateBlock() {
