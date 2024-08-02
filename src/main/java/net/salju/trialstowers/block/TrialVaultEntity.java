@@ -1,23 +1,21 @@
 package net.salju.trialstowers.block;
 
-import net.salju.trialstowers.init.TrialsModSounds;
-import net.salju.trialstowers.init.TrialsBlockEntities;
-import net.salju.trialstowers.events.TrialsManager;
-import net.salju.trialstowers.TrialsMod;
-
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.Containers;
-import net.minecraft.util.Mth;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.network.Connection;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Containers;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.salju.trialstowers.TrialsMod;
+import net.salju.trialstowers.events.TrialsManager;
+import net.salju.trialstowers.init.TrialsBlockEntities;
+import net.salju.trialstowers.init.TrialsModSounds;
 
 public class TrialVaultEntity extends BlockEntity {
 	private int cd;
@@ -75,17 +73,14 @@ public class TrialVaultEntity extends BlockEntity {
 							lvl.playSound(null, pos, TrialsModSounds.SPAWNER_CLOSE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 							target.setCd(12000);
 						} else if (target.getCd() == 0) {
-							int e = Mth.nextInt(world.getRandom(), 4, 7);
-							target.setCd(20 * e);
+							target.setCd(20);
 							lvl.playSound(null, pos, TrialsModSounds.VAULT_OPEN.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
-							for (int i = 0; i != e; ++i) {
-								TrialsMod.queueServerWork((20 * i), () -> {
-									for (ItemStack stack : TrialsManager.getLoot(target, world, target.getVaultLootTable())) {
-										lvl.playSound(null, pos, TrialsModSounds.VAULT_EJECT.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
-										Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), stack);
-									}
-								});
-							}
+							TrialsMod.queueServerWork(20, () -> {
+								for (ItemStack stack : TrialsManager.getLoot(target, world, target.getVaultLootTable())) {
+									lvl.playSound(null, pos, TrialsModSounds.VAULT_EJECT.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+									Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), stack);
+								}
+							});
 						} else {
 							target.setCd(target.getCd() - 1);
 						}
