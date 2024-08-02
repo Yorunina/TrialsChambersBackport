@@ -178,11 +178,11 @@ public class TrialSpawnerEntity extends BlockEntity {
 								lvl.playSound(null, pos, TrialsModSounds.SPAWNER_ITEM.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 								if (block.isCursed(state)) {
 									Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), new ItemStack(TrialsItems.TRIAL_KEY.get()));
-								} else {
-									for (ItemStack stack : TrialsManager.getLoot(target, world, target.getSpawnLootTable())) {
-										Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), stack);
-									}
 								}
+								for (ItemStack stack : TrialsManager.getLoot(target, world, target.getSpawnLootTable())) {
+									Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), stack);
+								}
+
 							});
 							lvl.playSound(null, pos, TrialsModSounds.SPAWNER_OPEN.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 							world.setBlock(pos, state.setValue(TrialSpawnerBlock.EJECT, Boolean.valueOf(true)), 3);
