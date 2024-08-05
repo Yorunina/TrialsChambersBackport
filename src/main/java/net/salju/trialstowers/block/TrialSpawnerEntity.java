@@ -62,7 +62,8 @@ import com.google.common.collect.Lists;
 public class TrialSpawnerEntity extends BlockEntity {
 	private ItemStack egg;
 	private boolean isActive;
-	private String spawnLootTable = "trials:gameplay/spawner_loot";
+	private static final String defaultSpawnLootTable = "trials:gameplay/spawner_loot";
+	private String spawnLootTable = defaultSpawnLootTable;
 	private int d;
 	private int cd;
 	private int e;
@@ -179,7 +180,11 @@ public class TrialSpawnerEntity extends BlockEntity {
 								if (block.isCursed(state)) {
 									Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), new ItemStack(TrialsItems.TRIAL_KEY.get()));
 								}
-								for (ItemStack stack : TrialsManager.getLoot(target, world, target.getSpawnLootTable())) {
+								String lootTable = target.getSpawnLootTable();
+								if (lootTable.isEmpty()) {
+									lootTable = defaultSpawnLootTable;
+								}
+								for (ItemStack stack : TrialsManager.getLoot(target, world, lootTable)) {
 									Containers.dropItemStack(world, pos.getX(), (pos.getY() + 1.0), pos.getZ(), stack);
 								}
 
