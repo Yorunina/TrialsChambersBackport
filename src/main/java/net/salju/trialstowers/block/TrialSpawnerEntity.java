@@ -240,7 +240,7 @@ public class TrialSpawnerEntity extends BlockEntity {
 
 	public static void checkPlayer(Level world, BlockPos pos, BlockState state, TrialSpawnerEntity target) {
 		if (world instanceof ServerLevel lvl) {
-			Player player = lvl.getNearestPlayer(pos.getX(), pos.getY(), pos.getZ(), 64, false);
+			Player player = lvl.getNearestPlayer(pos.getX(), pos.getY(), pos.getZ(), 32, false);
 			if (player == null) {
 				target.setActivity(false);
 				target.setRemainingEnemies(0);
